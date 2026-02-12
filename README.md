@@ -1,92 +1,138 @@
-\# PI Data Extractor (Streamlit)
+PI Data Extractor
+Enterprise Streamlit Application for PI Time-Series Retrieval & Data Quality Processing
 
+──────────────────────────────────────────────────────────────────────────────
 
+OVERVIEW
 
-A Streamlit app that:
+PI Data Extractor is an internal Streamlit application designed to retrieve
+interpolated time-series data from OSIsoft PI using a structured Excel-based
+tag list. The application supports controlled data retrieval, automated data
+quality cleaning, and professionally formatted Excel exports suitable for
+engineering and operational workflows.
 
-\- accepts an Excel “tag list” (any metadata columns + a required \*\*SCADA TAG\*\* column),
+This tool is intended for internal environments where direct PI connectivity
+is available.
 
-\- queries PI for interpolated time-series data,
+──────────────────────────────────────────────────────────────────────────────
 
-\- exports \*\*Raw\*\* or \*\*Clean\*\* data to a formatted Excel file,
+CORE CAPABILITIES
 
-\- visualizes any selected tag with quality markers (raw negatives, missing/bad tokens).
+Dynamic Tag List Support
+Upload an Excel file containing any metadata columns alongside a required
+SCADA TAG column. All additional columns are preserved and used as structured
+header levels in the exported dataset.
 
+Two Export Modes (No Re-Query Required)
 
+Raw Data Mode
+Exports values exactly as returned from PI.
 
-\## Features
+Clean Data Mode
+Applies structured cleaning logic:
+• Status strings converted to 0 / 1
+• Non-numeric values converted to 0
+• Negative values clipped to 0
+• Known bad tokens handled automatically
 
-\- \*\*Dynamic metadata headers:\*\* any extra columns in the uploaded tag list become Excel header rows
+Controlled Query Execution
+Changing time range, interval, or timezone does NOT automatically query PI.
+Data retrieval occurs only when the user clicks:
+Run / Refresh PI Query
 
-\- \*\*Two export modes (no re-query):\*\*
+Professional Excel Output
+• Multi-level metadata headers
+• Frozen panes
+• Numeric formatting to 3 decimals
+• Clean structure for downstream analysis
 
-&nbsp; - \*\*Raw data:\*\* as returned by PI
+Diagnostics & Transparency
+• Tags that fail retrieval are reported separately
+• Error messages are displayed clearly
+• Time-series plots highlight raw negatives and missing/bad tokens
 
-&nbsp; - \*\*Clean data:\*\* status strings → 0/1; non-numeric → 0; negatives → 0
+──────────────────────────────────────────────────────────────────────────────
 
-\- \*\*No auto-run:\*\* changing inputs does \*not\* query PI until you click \*\*Run / Refresh PI Query\*\*
+INPUT FILE STRUCTURE
 
-\- \*\*Download-ready Excel:\*\* numeric format to 3 decimals, frozen headers
+The uploaded Excel file must contain one column identifying the PI tag.
 
-\- \*\*Diagnostics:\*\* shows tags that failed and error messages
+Accepted column names include:
+• SCADA TAG (recommended)
+• SCADA_TAG
+• TAG
+• PI TAG
 
-
-
----
-
-
-
-\## Input file format
-
-Your Excel must contain a tag column named one of:
-
-\- `SCADA TAG` (recommended)
-
-\- `SCADA\_TAG`, `TAG`, `PI TAG`, etc.
-
-
-
-All other columns are treated as metadata and can be blank.
-
-
+All additional columns are treated as metadata and are preserved in the output.
 
 Example:
 
+Facility | Unit   | SCADA TAG
+---------------------------------------
+Plant A  | Pump 1 | TAG.NAME.001
+Plant A  | Pump 2 | TAG.NAME.002
 
+──────────────────────────────────────────────────────────────────────────────
 
-| Facility | Unit | SCADA TAG |
+TECHNICAL STACK
 
-|---|---|---|
+Frontend      : Streamlit  
+Data Layer    : PIconnect (PI SDK access)  
+Visualization : Altair  
+Export Engine : Pandas + XlsxWriter  
+Timezone      : pytz  
 
-| Plant A | Pump 1 | TAG.NAME.001 |
+Designed for internal deployment environments with PI connectivity.
 
-| Plant A | Pump 2 | TAG.NAME.002 |
+──────────────────────────────────────────────────────────────────────────────
 
+LOCAL DEPLOYMENT
 
-
----
-
-
-
-\## Local installation (recommended for PI environments)
-
-> PI connectivity usually requires internal network access and/or domain authentication.
-
-
-
-\### 1) Create and activate a virtual environment
-
-```bash
+1) Create virtual environment
+2) Install dependencies
+3) Launch Streamlit
 
 python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+streamlit run app.py
 
-\# Windows:
+Application will be available at:
+http://localhost:8501
 
-.venv\\Scripts\\activate
+──────────────────────────────────────────────────────────────────────────────
 
-\# macOS/Linux:
+PRODUCTION DEPLOYMENT OPTIONS
 
-source .venv/bin/activate
+Recommended internal deployment strategies:
 
+• Windows Server with Streamlit service
+• Docker-based internal container
+• Reverse proxy via IIS or Nginx
+• Active Directory authentication integration
 
+Note:
+Public cloud deployment is generally not suitable unless PI access is
+exposed through a secure internal API layer.
 
+──────────────────────────────────────────────────────────────────────────────
+
+SECURITY NOTES
+
+• Do not embed credentials directly in source code.
+• Use environment variables or .streamlit/secrets.toml.
+• Bind Streamlit to localhost and expose through a reverse proxy.
+• Restrict access using Active Directory groups when possible.
+
+──────────────────────────────────────────────────────────────────────────────
+
+VERSION
+
+Current version: 1.0.0
+
+──────────────────────────────────────────────────────────────────────────────
+
+LICENSE
+
+MIT License  
+© 2026 Ali Jozaghi
